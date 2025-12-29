@@ -17,7 +17,7 @@
     <description>SelfShare - Secure Ephemeral Vault</description>
 
     <properties>
-        <java.version>17</java.version> <!-- Changé à 17 pour la stabilité demandée dans le CDC -->
+        <java.version>23</java.version>
     </properties>
 
     <dependencies>
@@ -59,7 +59,7 @@
             <optional>true</optional>
         </dependency>
 
-        <!-- Test : Un seul starter contient TOUS les outils de test (Web, JPA, Security) -->
+        <!-- Test : Un seul starter contient TOUS les outils de test -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
