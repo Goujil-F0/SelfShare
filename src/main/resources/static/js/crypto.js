@@ -44,3 +44,26 @@ async function encryptData(data, isFile = false) {
 function bufferToBase64(buffer) {
     return btoa(String.fromCharCode(...new Uint8Array(buffer)));
 }
+// À ajouter à la fin de crypto.js
+async function decryptData(encryptedBase64, ivBase64, keyBase64, isFile = false) {
+    const encryptedBuffer = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
+    const iv = Uint8Array.from(atob(ivBase64), c => c.charCodeAt(0));
+    const keyBuffer = Uint8Array.from(atob(keyBase64), c => c.charCodeAt(0));
+
+    const key = await window.crypto.subtle.importKey(
+        "raw", keyBuffer, "AES-GCM", true, ["decrypt"]
+    );
+
+    const decryptedBuffer = await window.crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: iv },
+        key,
+        encryptedBuffer
+    );
+
+    if (isFile) {
+        const blob = new Blob([decryptedBuffer]);
+        return URL.createObjectURL(blob);
+    } else {
+        return new TextDecoder().decode(decryptedBuffer);
+    }
+}

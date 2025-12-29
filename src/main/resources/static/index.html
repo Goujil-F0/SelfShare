@@ -2,58 +2,51 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>SelfShare | Transfert Sécurisé</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SelfShare | Vault</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-<div class="container d-flex flex-column justify-content-center align-items-center" style="min-height: 100vh;">
-    <div class="text-center mb-5">
-        <h1 class="display-4 fw-bold">Self<span style="color: var(--primary)">Share</span></h1>
-        <p class="text-muted">Chiffrement Zero-Knowledge de bout en bout.</p>
+<div class="main-container">
+    <div class="header">
+        <h1>SelfShare</h1>
+        <p style="color: var(--text-muted)">Partagez vos données de façon éphémère et chiffrée.</p>
     </div>
 
-    <div class="glass-card p-5 w-100" style="max-width: 600px;">
+    <div class="glass-card">
         <div id="step-form">
-            <div class="mb-4">
-                <label class="form-label text-uppercase small fw-bold">Votre Secret</label>
-                <textarea id="textInput" class="form-control secret-input" rows="4" placeholder="Entrez le texte à sécuriser..."></textarea>
-            </div>
+            <label class="form-label">Contenu du secret</label>
+            <textarea id="textInput" class="custom-input" rows="5" placeholder="Écrivez votre message secret ici..."></textarea>
 
-            <div class="mb-4">
-                <label class="form-label text-uppercase small fw-bold">Ou un fichier (Max 10Mo)</label>
-                <input type="file" id="fileInput" class="form-control secret-input">
-            </div>
+            <label class="form-label">Pièce jointe (Optionnel)</label>
+            <input type="file" id="fileInput" class="custom-input">
 
-            <div class="row mb-4">
-                <div class="col">
-                    <label class="form-label small">EXPIRATION</label>
-                    <select id="expirySelect" class="form-select secret-input">
-                        <option value="3600">1 Heure</option>
-                        <option value="86400">24 Heures</option>
-                        <option value="0">Burn after reading (Une seule fois)</option>
-                    </select>
-                </div>
-            </div>
+            <label class="form-label">Délai d'expiration</label>
+            <select id="expirySelect" class="custom-input">
+                <option value="3600">1 Heure</option>
+                <option value="86400">24 Heures</option>
+                <option value="604800">7 Jours</option>
+                <option value="0">Lecture unique (Destruction immédiate)</option>
+            </select>
 
-            <button id="encryptBtn" class="btn btn-cyber w-100 py-3 mt-2">GÉNÉRER LE LIEN SÉCURISÉ</button>
+            <button id="encryptBtn" class="btn-generate">Verrouiller et partager</button>
         </div>
 
-        <!-- Zone de résultat (cachée au début) -->
-        <div id="step-result" class="d-none text-center">
-            <div class="alert alert-info bg-transparent border-info text-info">
-                Le lien est prêt. Copiez-le et partagez-le !
-            </div>
-            <div class="input-group mb-3">
-                <input type="text" id="shareUrl" class="form-control secret-input" readonly>
-                <button class="btn btn-outline-info" id="copyBtn">Copier</button>
-            </div>
-            <button onclick="location.reload()" class="btn btn-link text-muted">Créer un autre secret</button>
+        <!-- Zone de succès cachée -->
+        <div id="step-result" style="display:none; text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 20px;">🛡️</div>
+            <h3 style="margin-bottom: 10px;">Votre lien est prêt</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Copiez-le et partagez-le. Il s'auto-détruira selon vos réglages.</p>
+            <input type="text" id="shareUrl" class="custom-input" readonly style="text-align: center; border-color: var(--accent-primary);">
+            <button id="copyBtn" class="btn-generate" style="background: #232b36; color: white; border: 1px solid var(--accent-primary);">Copier le lien</button>
+            <br><br>
+            <a href="javascript:location.reload()" style="color: var(--accent-primary); text-decoration: none; font-size: 0.8rem;">Créer un autre secret</a>
         </div>
     </div>
 </div>
 
 <script src="js/crypto.js"></script>
+<script src="js/api.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
