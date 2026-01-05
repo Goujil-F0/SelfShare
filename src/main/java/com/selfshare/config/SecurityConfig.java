@@ -17,11 +17,12 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        System.out.println("DEBUG: Le fichier SecurityConfig est bien chargé par Spring !");
         http
                 .csrf(csrf -> csrf.disable()) // Désactivé pour permettre les POST depuis le frontend
                 .authorizeHttpRequests(auth -> auth
                         // Accès PUBLIC : création, lecture de secrets et fichiers statiques
-                        .requestMatchers("/api/secrets/**", "/", "/index.html", "/view.html", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/api/secrets", "/api/secrets/**", "/error", "/", "/index.html", "/view.html", "/css/**", "/js/**").permitAll()
 
                         // Accès RÉSERVÉ : Tout ce qui commence par /admin
                         .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
