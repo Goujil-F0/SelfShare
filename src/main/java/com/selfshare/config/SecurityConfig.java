@@ -3,6 +3,7 @@ package com.selfshare.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
@@ -11,29 +12,34 @@ import org.springframework.security.web.SecurityFilterChain;
 import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
+@EnableWebSecurity
 public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-                .csrf(csrf -> csrf.disable()) // Toujours désactivé pour faciliter les tests API/Postman
+                .csrf(csrf -> csrf.disable()) // Désactivé pour permettre les POST depuis le frontend
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/secrets/**").permitAll() // TOUT LE MONDE peut créer/lire des secrets
-                        .requestMatchers("/admin/**").hasRole("ADMIN")  // SEUL l'admin peut voir le dashboard
+                        // Accès PUBLIC : création, lecture de secrets et fichiers statiques
+                        .requestMatchers("/api/secrets/**", "/", "/index.html", "/view.html", "/css/**", "/js/**").permitAll()
+
+                        // Accès RÉSERVÉ : Tout ce qui commence par /admin
+                        .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
+
                         .anyRequest().authenticated()
                 )
-                .formLogin(withDefaults()) // Active le formulaire de login pour la partie admin
-                .httpBasic(withDefaults()); // Permet aussi de tester via Postman
+                .formLogin(withDefaults()) // Affiche le formulaire de login par défaut
+                .logout(logout -> logout.logoutSuccessUrl("/")); // Redirige vers l'accueil après déconnexion
 
         return http.build();
     }
 
-    // Création d'un utilisateur admin temporaire (en mémoire)
+    // Création de l'utilisateur Admin en mémoire
     @Bean
     public InMemoryUserDetailsManager userDetailsService() {
         UserDetails admin = User.withDefaultPasswordEncoder()
                 .username("admin")
-                .password("admin123")
+                .password("admin123") // À changer plus tard pour plus de sécurité
                 .roles("ADMIN")
                 .build();
         return new InMemoryUserDetailsManager(admin);
