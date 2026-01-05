@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SelfShare | Vault</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="main-container">
+    <div class="header">
+        <h1>SelfShare</h1>
+        <p style="color: var(--text-muted)">Partagez vos données de façon éphémère et chiffrée.</p>
+    </div>
+
+    <div class="glass-card">
+        <div id="step-form">
+            <label class="form-label">Contenu du secret</label>
+            <textarea id="textInput" class="custom-input" rows="5" placeholder="Écrivez votre message secret ici..."></textarea>
+
+            <label class="form-label">Pièce jointe (Optionnel)</label>
+            <input type="file" id="fileInput" class="custom-input">
+
+            <label class="form-label">Délai d'expiration</label>
+            <select id="expirySelect" class="custom-input">
+                <option value="3600">1 Heure</option>
+                <option value="86400">24 Heures</option>
+                <option value="604800">7 Jours</option>
+                <option value="0">Lecture unique (Destruction immédiate)</option>
+            </select>
+
+            <button id="encryptBtn" class="btn-generate">Verrouiller et partager</button>
+        </div>
+
+        <!-- Zone de succès cachée -->
+        <div id="step-result" style="display:none; text-align: center;">
+            <div style="font-size: 3rem; margin-bottom: 20px;">🛡️</div>
+            <h3 style="margin-bottom: 10px;">Votre lien est prêt</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Copiez-le et partagez-le. Il s'auto-détruira selon vos réglages.</p>
+            <input type="text" id="shareUrl" class="custom-input" readonly style="text-align: center; border-color: var(--accent-primary);">
+            <button id="copyBtn" class="btn-generate" style="background: #232b36; color: white; border: 1px solid var(--accent-primary);">Copier le lien</button>
+            <br><br>
+            <a href="javascript:location.reload()" style="color: var(--accent-primary); text-decoration: none; font-size: 0.8rem;">Créer un autre secret</a>
+        </div>
+    </div>
+</div>
+
+<script src="js/crypto.js"></script>
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
