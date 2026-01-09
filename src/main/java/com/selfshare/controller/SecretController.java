@@ -32,4 +32,9 @@ public class SecretController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
+
+    @GetMapping("/test")
+    public String testPublic() {
+        return "L'API est bien publique !";
+    }
 }
