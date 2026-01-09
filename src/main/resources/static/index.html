@@ -1,52 +1,307 @@
 <!DOCTYPE html>
-<html lang="fr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SelfShare | Vault</title>
-    <link rel="stylesheet" href="css/style.css">
+    <title>SelfShare | Entrance</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;600;900&display=swap');
+
+        :root {
+            --void: #030014;
+            --neon-cyan: #00f3ff;
+            --neon-purple: #b026ff;
+            --text: #e2e8f0;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--void);
+            color: var(--text);
+            font-family: 'Outfit', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: crosshair; /* Adds to the precision feel */
+        }
+
+        /* THE STARFIELD (Dynamic Background) */
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 0;
+        }
+
+        /* MAIN CONTENT WRAPPER */
+        .portal-container {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            transition: opacity 0.8s ease;
+        }
+
+        /* THE BLACK HOLE / PORTAL */
+        .black-hole {
+            width: 150px;
+            height: 150px;
+            background: #000;
+            border-radius: 50%;
+            margin: 0 auto 40px auto;
+            position: relative;
+            box-shadow:
+                    0 0 20px rgba(176, 38, 255, 0.5),
+                    0 0 60px rgba(0, 243, 255, 0.3),
+                    inset 0 0 40px rgba(0,0,0,1);
+            animation: breathe 4s ease-in-out infinite;
+        }
+
+        /* The Accretion Disk (Spinning Ring) */
+        .black-hole::after {
+            content: '';
+            position: absolute;
+            top: -10px; left: -10px; right: -10px; bottom: -10px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: var(--neon-cyan);
+            border-bottom-color: var(--neon-purple);
+            animation: spin 6s linear infinite;
+            filter: blur(2px);
+        }
+
+        .title {
+            font-size: 5rem;
+            font-weight: 900;
+            letter-spacing: -3px;
+            margin: 0;
+            background: linear-gradient(135deg, #fff, var(--text));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            position: relative;
+        }
+
+        .subtitle {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--neon-cyan);
+            letter-spacing: 4px;
+            font-size: 0.9rem;
+            margin-top: 10px;
+            opacity: 0.7;
+            text-transform: uppercase;
+        }
+
+        /* THE BUTTON */
+        .enter-btn {
+            margin-top: 50px;
+            background: transparent;
+            border: 1px solid rgba(255,255,255,0.2);
+            padding: 15px 40px;
+            color: white;
+            font-family: 'JetBrains Mono';
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            text-transform: uppercase;
+        }
+
+        .enter-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(176, 38, 255, 0.4), transparent);
+            transition: 0.5s;
+        }
+
+        .enter-btn:hover {
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 20px rgba(176, 38, 255, 0.4);
+            letter-spacing: 2px;
+        }
+
+        .enter-btn:hover::before {
+            left: 100%;
+        }
+
+        /* WARP ANIMATION CLASSES */
+        .warping .portal-container {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+
+        .warping .black-hole {
+            transform: scale(50);
+            transition: transform 1.5s cubic-bezier(0.7, 0, 0.3, 1);
+            background: white; /* Flashbang effect */
+            box-shadow: 0 0 500px white;
+        }
+
+        /* ANIMATIONS */
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 30px rgba(176, 38, 255, 0.4); }
+            50% { transform: scale(1.05); box-shadow: 0 0 60px rgba(0, 243, 255, 0.5); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* GLITCH TEXT EFFECT */
+        .glitch-wrapper {
+            position: relative;
+        }
+        .glitch-wrapper::before, .glitch-wrapper::after {
+            content: "SELFSHARE";
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: var(--void);
+            opacity: 0.5;
+        }
+        .glitch-wrapper::before {
+            left: 2px;
+            text-shadow: -1px 0 #ff00c1;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+        .glitch-wrapper::after {
+            left: -2px;
+            text-shadow: -1px 0 #00fff9;
+            clip: rect(44px, 450px, 56px, 0);
+            animation: glitch-anim-2 5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(30px, 9999px, 10px, 0); }
+            20% { clip: rect(80px, 9999px, 90px, 0); }
+            40% { clip: rect(10px, 9999px, 50px, 0); }
+            60% { clip: rect(40px, 9999px, 20px, 0); }
+            80% { clip: rect(70px, 9999px, 100px, 0); }
+            100% { clip: rect(20px, 9999px, 60px, 0); }
+        }
+        @keyframes glitch-anim-2 {
+            0% { clip: rect(10px, 9999px, 80px, 0); }
+            100% { clip: rect(90px, 9999px, 10px, 0); }
+        }
+
+    </style>
 </head>
 <body>
-<div class="main-container">
-    <div class="header">
-        <h1>SelfShare</h1>
-        <p style="color: var(--text-muted)">Partagez vos données de façon éphémère et chiffrée.</p>
-    </div>
 
-    <div class="glass-card">
-        <div id="step-form">
-            <label class="form-label">Contenu du secret</label>
-            <textarea id="textInput" class="custom-input" rows="5" placeholder="Écrivez votre message secret ici..."></textarea>
+<!-- Background Canvas for Stars -->
+<canvas id="canvas"></canvas>
 
-            <label class="form-label">Pièce jointe (Optionnel)</label>
-            <input type="file" id="fileInput" class="custom-input">
+<div class="portal-container">
+    <div class="black-hole"></div>
 
-            <label class="form-label">Délai d'expiration</label>
-            <select id="expirySelect" class="custom-input">
-                <option value="3600">1 Heure</option>
-                <option value="86400">24 Heures</option>
-                <option value="604800">7 Jours</option>
-                <option value="0">Lecture unique (Destruction immédiate)</option>
-            </select>
+    <div class="glitch-wrapper title">SELFSHARE</div>
+    <div class="subtitle">Secure Data Vault // v2.0</div>
 
-            <button id="encryptBtn" class="btn-generate">Verrouiller et partager</button>
-        </div>
-
-        <!-- Zone de succès cachée -->
-        <div id="step-result" style="display:none; text-align: center;">
-            <div style="font-size: 3rem; margin-bottom: 20px;">🛡️</div>
-            <h3 style="margin-bottom: 10px;">Votre lien est prêt</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 20px;">Copiez-le et partagez-le. Il s'auto-détruira selon vos réglages.</p>
-            <input type="text" id="shareUrl" class="custom-input" readonly style="text-align: center; border-color: var(--accent-primary);">
-            <button id="copyBtn" class="btn-generate" style="background: #232b36; color: white; border: 1px solid var(--accent-primary);">Copier le lien</button>
-            <br><br>
-            <a href="javascript:location.reload()" style="color: var(--accent-primary); text-decoration: none; font-size: 0.8rem;">Créer un autre secret</a>
-        </div>
-    </div>
+    <button class="enter-btn" onclick="enterVault()">
+        Initialize Connection
+    </button>
 </div>
 
-<script src="js/crypto.js"></script>
-<script src="js/api.js"></script>
-<script src="js/main.js"></script>
+<script>
+    // 1. STARFIELD ANIMATION
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let width, height;
+    let stars = [];
+
+    // Mouse interaction
+    let mouse = { x: 0, y: 0 };
+    window.addEventListener('mousemove', e => {
+        mouse.x = e.clientX;
+        mouse.y = e.clientY;
+    });
+
+    function resize() {
+        width = window.innerWidth;
+        height = window.innerHeight;
+        canvas.width = width;
+        canvas.height = height;
+    }
+
+    class Star {
+        constructor() {
+            this.x = Math.random() * width;
+            this.y = Math.random() * height;
+            this.size = Math.random() * 2;
+            this.speedX = (Math.random() - 0.5) * 0.5;
+            this.speedY = (Math.random() - 0.5) * 0.5;
+            this.color = Math.random() > 0.8 ? '#00f3ff' : '#6a0dad'; // Cyan or Purple
+        }
+
+        update() {
+            // Movement
+            this.x += this.speedX;
+            this.y += this.speedY;
+
+            // Mouse Repulsion (The "Force Field" effect)
+            const dx = this.x - mouse.x;
+            const dy = this.y - mouse.y;
+            const distance = Math.sqrt(dx*dx + dy*dy);
+
+            if (distance < 150) {
+                const angle = Math.atan2(dy, dx);
+                this.x += Math.cos(angle) * 2;
+                this.y += Math.sin(angle) * 2;
+            }
+
+            // Wrap around screen
+            if (this.x < 0) this.x = width;
+            if (this.x > width) this.x = 0;
+            if (this.y < 0) this.y = height;
+            if (this.y > height) this.y = 0;
+        }
+
+        draw() {
+            ctx.fillStyle = this.color;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
+
+    function initStars() {
+        stars = [];
+        for(let i = 0; i < 150; i++) { // 150 stars
+            stars.push(new Star());
+        }
+    }
+
+    function animate() {
+        ctx.clearRect(0, 0, width, height);
+        stars.forEach(star => {
+            star.update();
+            star.draw();
+        });
+        requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    initStars();
+    animate();
+
+    // 2. PAGE TRANSITION (The "Warp")
+    function enterVault() {
+        document.body.classList.add('warping');
+
+        // Wait 1.5 seconds for animation, then redirect
+        setTimeout(() => {
+            window.location.href = 'vault.html';
+        }, 1200);
+    }
+</script>
 </body>
 </html>

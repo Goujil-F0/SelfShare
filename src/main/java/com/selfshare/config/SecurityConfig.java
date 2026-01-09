@@ -22,7 +22,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Désactivé pour permettre les POST depuis le frontend
                 .authorizeHttpRequests(auth -> auth
                         // Accès PUBLIC : création, lecture de secrets et fichiers statiques
-                        .requestMatchers("/api/secrets", "/api/secrets/**", "/error", "/", "/index.html", "/view.html", "/css/**", "/js/**").permitAll()
+                        .requestMatchers("/api/secrets", "/api/secrets/**", "/error", "/", "/vault.html", "/view.html", "/css/**", "/js/**", "/index.html/**").permitAll()
 
                         // Accès RÉSERVÉ : Tout ce qui commence par /admin
                         .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
