@@ -22,11 +22,13 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Désactive CSRF pour faciliter les tests API
                 .authorizeHttpRequests(auth -> auth
                         // Accès PUBLIC : création, lecture de secrets et fichiers statiques
+                 
                         .requestMatchers(
                                 "/api/secrets",
                                 "/api/secrets/**",
                                 "/error",
                                 "/",
+                                "/vault.html",
                                 "/index.html",
                                 "/view.html",
                                 "/css/**",

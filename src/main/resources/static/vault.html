@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SelfShare | Secure Vault</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- This creates the TV/Monitor texture over the screen -->
+<div class="scanlines"></div>
+
+<div class="main-container">
+    <div class="header">
+        <!--
+          This 'cyber-planet' div creates the 3D glowing ball effect via CSS.
+          If you want a real image later, replace this div with:
+          <img src="your-3d-image.png" class="cyber-planet" style="background:none; border:none; box-shadow:none;">
+        -->
+        <div class="cyber-planet"></div>
+
+        <h1>SelfShare</h1>
+        <p>ENCRYPTED // EPHEMERAL // VAULT</p>
+    </div>
+
+    <div class="glass-card">
+        <div id="step-form">
+            <label class="form-label" for="textInput">INPUT_SECRET_DATA</label>
+            <textarea id="textInput" class="custom-input" rows="4" placeholder="Enter your data here ..."></textarea>
+
+            <label class="form-label" for="fileInput">ATTACHMENT (OPTIONAL)</label>
+            <input type="file" id="fileInput" class="custom-input">
+
+            <label class="form-label" for="expirySelect">SET_DESTRUCTION_TIMER</label>
+            <select id="expirySelect" class="custom-input">
+                <option value="3600">T-Minus 1 Hour</option>
+                <option value="86400">T-Minus 24 Hours</option>
+                <option value="604800">T-Minus 7 Days</option>
+                <option value="0">IMMEDIATE DESTRUCTION (Burn on read)</option>
+            </select>
+
+            <button id="encryptBtn" class="btn-generate">
+                INITIATE ENCRYPTION 🔒
+            </button>
+        </div>
+
+        <!-- Success Zone -->
+        <div id="step-result" style="display:none; text-align: center; padding-top:10px;">
+            <div style="font-size: 3rem; margin-bottom: 15px; filter: drop-shadow(0 0 10px var(--neon-cyan));">🛡️</div>
+            <h3>SECURE LINK GENERATED</h3>
+            <p style="color: var(--text-muted); font-size: 0.8rem; font-family: 'JetBrains Mono'; margin-bottom: 20px;">
+                // TRANSMIT LINK SECURELY.<br>
+                // DATA WILL SELF-DESTRUCT.
+            </p>
+
+            <input type="text" id="shareUrl" class="custom-input" readonly style="text-align: center; margin-bottom: 15px; color: var(--neon-purple); border-color: var(--neon-purple);">
+
+            <button id="copyBtn" class="btn-generate" style="margin-top: 5px;">COPY TO CLIPBOARD</button>
+
+            <br><br>
+            <a href="javascript:location.reload()" style="color: var(--text-muted); font-family: 'JetBrains Mono'; text-decoration: none; font-size: 0.75rem; border-bottom: 1px dotted var(--text-muted);">
+                [ RESET_TERMINAL ]
+            </a>
+        </div>
+    </div>
+</div>
+
+<script src="js/crypto.js"></script>
+<script src="js/api.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
