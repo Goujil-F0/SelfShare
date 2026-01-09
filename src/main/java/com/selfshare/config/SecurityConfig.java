@@ -22,7 +22,20 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Désactive CSRF pour faciliter les tests API
                 .authorizeHttpRequests(auth -> auth
                         // Accès PUBLIC : création, lecture de secrets et fichiers statiques
-                        .requestMatchers("/api/secrets", "/api/secrets/**", "/error", "/", "/index.html", "/view.html", "/css/**", "/js/**").permitAll()
+                        .requestMatchers(
+                                "/api/secrets",
+                                "/api/secrets/**",
+                                "/error",
+                                "/",
+                                "/index.html",
+                                "/view.html",
+                                "/css/**",
+                                "/js/**",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**",
+                                "/swagger-ui.html"
+                                ).permitAll()
+
 
                         // Accès RÉSERVÉ : Tout ce qui commence par /admin
                         .requestMatchers("/admin/**", "/api/admin/**").hasRole("ADMIN")
