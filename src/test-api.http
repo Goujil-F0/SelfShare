@@ -1,4 +1,3 @@
-### Créer un nouveau secret (Test POST)
 POST http://localhost:8081/api/secrets
 Content-Type: application/json
 
@@ -6,4 +5,14 @@ Content-Type: application/json
   "contentBlob": "U2VjcmV0IFRlc3Q=",
   "isFile": false,
   "senderEmail": "test@example.com"
+}
+
+### Test 2 : Créer un secret pour tester l'email et le nettoyage
+POST http://localhost:8081/api/secrets
+Content-Type: application/json
+
+{
+  "contentBlob": "VGVzdCBkZSBzZWN1cml0ZSAh",
+  "isFile": false,
+  "senderEmail": "test-equipe@example.com"
 }
