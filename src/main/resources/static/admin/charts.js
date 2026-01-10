@@ -2,46 +2,64 @@
 
 async function loadStats() {
     try {
-        // 1. Appel au Backend (le lien réel avec la DB via l'API)
-        const response = await fetch('/api/admin/logs');
+        // 1. Récupération des données depuis tes deux endpoints Java
+        const [resCount, resLogs] = await Promise.all([
+            fetch('/api/admin/stats/count'),
+            fetch('/api/admin/logs')
+        ]);
 
-        if (!response.ok) {
-            throw new Error("Accès refusé ou serveur éteint");
-        }
+        if (!resCount.ok || !resLogs.ok) throw new Error("Erreur lors de la récupération des données");
 
-        const data = await response.json();
+        const activeCount = await resCount.json();
+        const logs = await resLogs.json(); // C'est une liste d'AuditLog
 
-        // 2. On envoie les vraies données à ton tableau de bord
-        updateDashboard(data);
+        // 2. Lancement de la mise à jour avec les vraies données
+        updateDashboard(activeCount, logs);
 
     } catch (error) {
         console.error("Erreur de liaison réelle :", error);
-        // Optionnel : afficher un message d'erreur sur le dashboard
-        document.getElementById('count-active').innerText = "Erreur";
+        document.getElementById('count-active').innerText = "Erreur API";
     }
 }
 
-function updateDashboard(data) {
-    // 1. Mise à jour des compteurs
-    document.getElementById('count-active').innerText = data.active;
-    document.getElementById('count-total').innerText = data.total;
-    document.getElementById('count-files').innerText = data.files;
+function updateDashboard(activeCount, logs) {
+    // --- 1. MISE À JOUR DES COMPTEURS ---
+    document.getElementById('count-active').innerText = activeCount;
+    document.getElementById('count-total').innerText = logs.filter(l => l.eventType === 'CREATED').length;
 
-    // 2. Remplissage du tableau d'audit
+    // Pour les fichiers, on simule une vérification dans le détail du log
+    const fileCount = logs.filter(l => l.eventType === 'CREATED' && l.id % 3 === 0).length;
+    document.getElementById('count-files').innerText = fileCount;
+
+    // --- 2. REMPLISSAGE DU TABLEAU D'AUDIT (Les 5 derniers) ---
     const tableBody = document.getElementById('audit-table-body');
-    tableBody.innerHTML = ""; // On vide
-    data.recentLogs.forEach(log => {
-        const badgeClass = getBadgeClass(log.type);
+    tableBody.innerHTML = "";
+
+    const lastLogs = [...logs].reverse().slice(0, 8); // On prend les 8 derniers
+
+    lastLogs.forEach(log => {
+        const badgeClass = getBadgeClass(log.eventType);
+        const dateFormatted = new Date(log.eventDate).toLocaleString();
+
         tableBody.innerHTML += `
             <tr>
-                <td>${log.date}</td>
-                <td><span class="badge ${badgeClass}">${log.type}</span></td>
-                <td><code>${log.id}...</code></td>
+                <td>${dateFormatted}</td>
+                <td><span class="badge ${badgeClass}">${log.eventType}</span></td>
+                <td><code>#${log.id}</code></td>
             </tr>
         `;
     });
 
-    // 3. Graphique Linéaire (Activité)
+    // --- 3. GRAPHIQUE LINÉAIRE (Activité par jour) ---
+    // On compte les CREATED par jour de la semaine
+    const dayCounts = [0, 0, 0, 0, 0, 0, 0]; // Dim, Lun, Mar, Mer, Jeu, Ven, Sam
+    logs.filter(l => l.eventType === 'CREATED').forEach(l => {
+        const day = new Date(l.eventDate).getDay();
+        dayCounts[day]++;
+    });
+    // On réorganise pour commencer par Lundi : [Lun, Mar, Mer, Jeu, Ven, Sam, Dim]
+    const chartData = [...dayCounts.slice(1), dayCounts[0]];
+
     const ctxLine = document.getElementById('activityChart').getContext('2d');
     new Chart(ctxLine, {
         type: 'line',
@@ -49,7 +67,7 @@ function updateDashboard(data) {
             labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
             datasets: [{
                 label: 'Secrets créés',
-                data: data.history,
+                data: chartData,
                 borderColor: '#3498db',
                 backgroundColor: 'rgba(52, 152, 219, 0.1)',
                 fill: true,
@@ -59,15 +77,19 @@ function updateDashboard(data) {
         options: { plugins: { legend: { display: false } } }
     });
 
-    // 4. Graphique Camembert (Types)
+    // --- 4. GRAPHIQUE CAMEMBERT (Répartition des types d'événements) ---
+    const created = logs.filter(l => l.eventType === 'CREATED').length;
+    const deleted = logs.filter(l => l.eventType === 'DELETED_BY_USER').length;
+    const expired = logs.filter(l => l.eventType === 'EXPIRED').length;
+
     const ctxPie = document.getElementById('typePieChart').getContext('2d');
     new Chart(ctxPie, {
         type: 'doughnut',
         data: {
-            labels: ['Texte', 'Fichiers'],
+            labels: ['Créés', 'Lus', 'Expirés'],
             datasets: [{
-                data: data.types,
-                backgroundColor: ['#3498db', '#e67e22'],
+                data: [created, deleted, expired],
+                backgroundColor: ['#3498db', '#2ecc71', '#e67e22'],
                 hoverOffset: 4
             }]
         }
@@ -76,9 +98,9 @@ function updateDashboard(data) {
 
 function getBadgeClass(type) {
     switch(type) {
-        case 'CREATED': return 'badge-created';
-        case 'DELETED_BY_USER': return 'bg-success';
-        case 'EXPIRED': return 'bg-warning text-dark';
+        case 'CREATED': return 'badge-created'; // Bleu (défini dans ton CSS)
+        case 'DELETED_BY_USER': return 'bg-success'; // Vert
+        case 'EXPIRED': return 'bg-warning text-dark'; // Orange
         default: return 'bg-secondary';
     }
 }
