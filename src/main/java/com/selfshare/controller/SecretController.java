@@ -7,7 +7,7 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import com.selfshare.entity.Secret;
 import com.selfshare.service.SecretService;
 import jakarta.servlet.http.HttpServletRequest;
-import org.apache.tomcat.util.http.fileupload.ByteArrayOutputStream;
+import java.io.ByteArrayOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -45,21 +45,16 @@ public class SecretController {
         return "L'API est bien publique !";
     }
 
-    @GetMapping(value = "/qr/{id}", produces = MediaType.IMAGE_PNG_VALUE)
-    public byte[] getQRCode(@PathVariable String id, @RequestParam("baseUrl") String baseUrl) throws Exception {
-        // On utilise l'adresse envoyée par le navigateur (localhost ou ngrok)
-        // On s'assure que l'URL pointe vers la page de vue
-        String urlToEncode = baseUrl + "/view.html?id=" + id;
-
-        // Debug pour voir dans ta console ce qui est écrit dans le QR Code
-        System.out.println("Génération QR Code pour l'URL : " + urlToEncode);
-
-        QRCodeWriter qrCodeWriter = new QRCodeWriter();
-        BitMatrix bitMatrix = qrCodeWriter.encode(urlToEncode, BarcodeFormat.QR_CODE, 300, 300);
-
-        ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-        MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
-
-        return pngOutputStream.toByteArray();
+    @GetMapping(value = "/qr", produces = MediaType.IMAGE_PNG_VALUE)
+    public byte[] getQRCode(@RequestParam("link") String link) { // Vérifie bien le nom "link"
+        try {
+            QRCodeWriter qrCodeWriter = new QRCodeWriter();
+            BitMatrix bitMatrix = qrCodeWriter.encode(link, BarcodeFormat.QR_CODE, 300, 300);
+            ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+            MatrixToImageWriter.writeToStream(bitMatrix, "PNG", pngOutputStream);
+            return pngOutputStream.toByteArray();
+        } catch (Exception e) {
+            return null;
+        }
     }
 }

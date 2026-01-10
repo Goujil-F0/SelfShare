@@ -107,7 +107,8 @@ function showResultView(link, secretId) {
         const currentOrigin = window.location.origin;
 
         // On passe cet origin en paramètre "baseUrl"
-        qrImg.src = `/api/secrets/qr/${secretId}?baseUrl=${encodeURIComponent(currentOrigin)}`;
+        qrImg.src = `/api/secrets/qr?link=${encodeURIComponent(link)}`;
         qrContainer.style.display = 'block';
     }
 }
+
