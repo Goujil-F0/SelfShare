@@ -4,6 +4,7 @@ import com.selfshare.entity.AuditLog;
 import com.selfshare.repository.AuditLogRepository;
 import com.selfshare.repository.SecretRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -39,5 +40,16 @@ public class AdminController {
         return auditLogRepository.findAll().stream()
                 .filter(log -> "CREATED".equals(log.getEventType()))
                 .count();
+    }
+
+    @DeleteMapping("/purge-all")
+    public String killAllSecrets() {
+        long count = secretRepository.count();
+        secretRepository.deleteAll(); // Supprime tout dans MySQL
+
+        // On laisse une trace dans l'audit
+        auditLogRepository.save(new com.selfshare.entity.AuditLog("EMERGENCY_PURGE", "ADMIN_ACTION"));
+
+        return "ALERTE : " + count + " secrets ont été supprimés définitivement du serveur.";
     }
 }
