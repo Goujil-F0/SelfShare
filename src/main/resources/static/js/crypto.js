@@ -1,8 +1,10 @@
 /**
- * Pourquoi AES-GCM ? C'est le standard actuel. Il garantit non seulement
- * la confidentialité mais aussi l'intégrité (on ne peut pas modifier le message).
+ * crypto.js - Moteur de chiffrement AES-GCM 256
  */
 
+/**
+ * Chiffre les données (texte ou fichier)
+ */
 async function encryptData(data, isFile = false) {
     // 1. Génération d'une clé aléatoire de 256 bits
     const key = await window.crypto.subtle.generateKey(
@@ -12,10 +14,9 @@ async function encryptData(data, isFile = false) {
     );
 
     // 2. Génération de l'IV (Vecteur d'Initialisation)
-    // Indispensable pour que le même texte ne donne pas le même résultat chiffré
     const iv = window.crypto.getRandomValues(new Uint8Array(12));
 
-    // 3. Préparer les données (convertir texte/fichier en octets)
+    // 3. Préparer les données
     let encodedData;
     if (isFile) {
         encodedData = await data.arrayBuffer();
@@ -30,7 +31,7 @@ async function encryptData(data, isFile = false) {
         encodedData
     );
 
-    // 5. Export de la clé en format "raw" pour le lien URL
+    // 5. Export de la clé
     const exportedKey = await window.crypto.subtle.exportKey("raw", key);
 
     return {
@@ -40,12 +41,10 @@ async function encryptData(data, isFile = false) {
     };
 }
 
-// Fonction utilitaire pour transformer du binaire en texte (Base64)
-function bufferToBase64(buffer) {
-    return btoa(String.fromCharCode(...new Uint8Array(buffer)));
-}
-// À ajouter à la fin de crypto.js
-async function decryptData(encryptedBase64, ivBase64, keyBase64, isFile = false) {
+/**
+ * Déchiffre les données (Appelé par view.html)
+ */
+async function decryptData(encryptedBase64, keyBase64, ivBase64, isFile = false) {
     const encryptedBuffer = Uint8Array.from(atob(encryptedBase64), c => c.charCodeAt(0));
     const iv = Uint8Array.from(atob(ivBase64), c => c.charCodeAt(0));
     const keyBuffer = Uint8Array.from(atob(keyBase64), c => c.charCodeAt(0));
@@ -61,10 +60,24 @@ async function decryptData(encryptedBase64, ivBase64, keyBase64, isFile = false)
     );
 
     if (isFile) {
+        // Retourne un Blob URL pour le téléchargement
         const blob = new Blob([decryptedBuffer]);
         return URL.createObjectURL(blob);
     } else {
+        // Retourne le texte décodé
         return new TextDecoder().decode(decryptedBuffer);
     }
+}
 
+/**
+ * Transforme un binaire en Base64 (Version Robuste)
+ * On utilise une boucle au lieu de '...' pour éviter le crash sur gros fichiers
+ */
+function bufferToBase64(buffer) {
+    const bytes = new Uint8Array(buffer);
+    let binary = "";
+    for (let i = 0; i < bytes.byteLength; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return window.btoa(binary);
 }
