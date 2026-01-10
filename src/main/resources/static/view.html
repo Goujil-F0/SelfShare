@@ -60,7 +60,7 @@
 <script>
     const urlParams = new URLSearchParams(window.location.search);
     const secretId = urlParams.get('id');
-    const secretKey = window.location.hash.substring(1);
+    const secretKey = window.location.hash.substring(1); // La clé après le #
 
     async function revealSecret() {
         if (!secretId || !secretKey) {
@@ -74,16 +74,15 @@
         try {
             // 1. Récupération des données chiffrées (Étudiant A)
             const response = await fetch(`/api/secrets/${secretId}`);
-
             if (response.status === 404) {
                 showError("Ce secret n'existe plus ou a déjà été lu.");
                 return;
             }
-
             const data = await response.json();
             // data contient : content_blob, iv, is_file, filename
 
             // 2. Déchiffrement et Affichage (Lien avec Étudiant C)
+            // ON APPELLE LE VRAI DÉCHIFFREMENT ICI
             await decryptAndDisplay(data, secretKey);
 
         } catch (error) {
