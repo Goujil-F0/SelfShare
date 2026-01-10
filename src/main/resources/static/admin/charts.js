@@ -1,17 +1,23 @@
-// Fonction pour charger les données depuis l'API Backend
+// js/charts.js
+
 async function loadStats() {
     try {
-        // NOTE: L'étudiant A devra créer cet endpoint
+        // En production, décommente ceci :
         // const response = await fetch('/api/admin/stats');
         // const data = await response.json();
 
-        // Simulation de données pour l'instant :
+        // Simulation de données (Mock data)
         const dummyData = {
             active: 12,
             total: 145,
-            files: 4,
-            history: [10, 15, 8, 20, 12, 25, 12], // 7 derniers jours
-            types: [110, 35] // [Texte, Fichiers]
+            files: 38,
+            history: [5, 12, 8, 25, 18, 10, 15],
+            types: [107, 38], // [Texte, Fichiers]
+            recentLogs: [
+                { date: "2025-12-28 14:30", type: "CREATED", id: "8af3-92bz" },
+                { date: "2025-12-28 14:35", type: "DELETED_BY_USER", id: "55f1-12ax" },
+                { date: "2025-12-28 15:10", type: "EXPIRED", id: "22cc-99lk" }
+            ]
         };
 
         updateDashboard(dummyData);
@@ -21,12 +27,28 @@ async function loadStats() {
 }
 
 function updateDashboard(data) {
+    // 1. Mise à jour des compteurs
     document.getElementById('count-active').innerText = data.active;
     document.getElementById('count-total').innerText = data.total;
     document.getElementById('count-files').innerText = data.files;
 
-    // Graphique Linéaire (Activité)
-    new Chart(document.getElementById('activityChart'), {
+    // 2. Remplissage du tableau d'audit
+    const tableBody = document.getElementById('audit-table-body');
+    tableBody.innerHTML = ""; // On vide
+    data.recentLogs.forEach(log => {
+        const badgeClass = getBadgeClass(log.type);
+        tableBody.innerHTML += `
+            <tr>
+                <td>${log.date}</td>
+                <td><span class="badge ${badgeClass}">${log.type}</span></td>
+                <td><code>${log.id}...</code></td>
+            </tr>
+        `;
+    });
+
+    // 3. Graphique Linéaire (Activité)
+    const ctxLine = document.getElementById('activityChart').getContext('2d');
+    new Chart(ctxLine, {
         type: 'line',
         data: {
             labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
@@ -34,23 +56,37 @@ function updateDashboard(data) {
                 label: 'Secrets créés',
                 data: data.history,
                 borderColor: '#3498db',
-                tension: 0.3
+                backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                fill: true,
+                tension: 0.4
             }]
-        }
+        },
+        options: { plugins: { legend: { display: false } } }
     });
 
-    // Graphique Camembert (Types)
-    new Chart(document.getElementById('typePieChart'), {
-        type: 'pie',
+    // 4. Graphique Camembert (Types)
+    const ctxPie = document.getElementById('typePieChart').getContext('2d');
+    new Chart(ctxPie, {
+        type: 'doughnut',
         data: {
             labels: ['Texte', 'Fichiers'],
             datasets: [{
                 data: data.types,
-                backgroundColor: ['#3498db', '#e67e22']
+                backgroundColor: ['#3498db', '#e67e22'],
+                hoverOffset: 4
             }]
         }
     });
 }
 
+function getBadgeClass(type) {
+    switch(type) {
+        case 'CREATED': return 'badge-created';
+        case 'DELETED_BY_USER': return 'bg-success';
+        case 'EXPIRED': return 'bg-warning text-dark';
+        default: return 'bg-secondary';
+    }
+}
+
 // Lancer au chargement
-loadStats();
+document.addEventListener('DOMContentLoaded', loadStats);
