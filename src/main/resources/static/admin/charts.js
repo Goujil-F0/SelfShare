@@ -2,27 +2,22 @@
 
 async function loadStats() {
     try {
-        // En production, décommente ceci :
-        // const response = await fetch('/api/admin/stats');
-        // const data = await response.json();
+        // 1. Appel au Backend (le lien réel avec la DB via l'API)
+        const response = await fetch('/api/admin/logs');
 
-        // Simulation de données (Mock data)
-        const dummyData = {
-            active: 12,
-            total: 145,
-            files: 38,
-            history: [5, 12, 8, 25, 18, 10, 15],
-            types: [107, 38], // [Texte, Fichiers]
-            recentLogs: [
-                { date: "2025-12-28 14:30", type: "CREATED", id: "8af3-92bz" },
-                { date: "2025-12-28 14:35", type: "DELETED_BY_USER", id: "55f1-12ax" },
-                { date: "2025-12-28 15:10", type: "EXPIRED", id: "22cc-99lk" }
-            ]
-        };
+        if (!response.ok) {
+            throw new Error("Accès refusé ou serveur éteint");
+        }
 
-        updateDashboard(dummyData);
+        const data = await response.json();
+
+        // 2. On envoie les vraies données à ton tableau de bord
+        updateDashboard(data);
+
     } catch (error) {
-        console.error("Erreur lors du chargement des stats", error);
+        console.error("Erreur de liaison réelle :", error);
+        // Optionnel : afficher un message d'erreur sur le dashboard
+        document.getElementById('count-active').innerText = "Erreur";
     }
 }
 
