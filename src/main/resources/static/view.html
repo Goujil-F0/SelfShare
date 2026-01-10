@@ -73,14 +73,14 @@
 
             // 3. Ici, on appellera la fonction de déchiffrement de l'Étudiant C
             // Pour l'instant, on simule l'affichage
-            encryptData(data, secretKey);
+            decryptAndDisplay(data, secretKey);
 
         } catch (error) {
             showError("Erreur lors de la connexion au serveur.");
         }
     }
 
-    function encryptData(data, key) {
+    function decryptAndDisplay(data, key) {
         // NOTE : C'est ici que l'Étudiant C interviendra avec window.crypto.subtle
         // Pour ton test de design, on affiche le blob chiffré
         document.getElementById('step-status').classList.add('hidden');
