@@ -46,21 +46,14 @@ public class SecretController {
     }
 
     @GetMapping(value = "/qr/{id}", produces = MediaType.IMAGE_PNG_VALUE)
-    public byte[] getQRCode(@PathVariable String id, HttpServletRequest request) throws Exception {
-        // 1. On détecte l'adresse actuelle (localhost ou Ngrok)
-        String scheme = request.getScheme(); // http ou https
-        String serverName = request.getServerName(); // localhost ou ton-lien.ngrok-free.dev
-        int serverPort = request.getServerPort();
-
-        String baseUrl = scheme + "://" + serverName;
-        if (serverPort != 80 && serverPort != 443) {
-            baseUrl += ":" + serverPort;
-        }
-
-        // 2. On construit le lien secret que le téléphone va ouvrir
+    public byte[] getQRCode(@PathVariable String id, @RequestParam("baseUrl") String baseUrl) throws Exception {
+        // On utilise l'adresse envoyée par le navigateur (localhost ou ngrok)
+        // On s'assure que l'URL pointe vers la page de vue
         String urlToEncode = baseUrl + "/view.html?id=" + id;
 
-        // 3. On génère l'image QR Code
+        // Debug pour voir dans ta console ce qui est écrit dans le QR Code
+        System.out.println("Génération QR Code pour l'URL : " + urlToEncode);
+
         QRCodeWriter qrCodeWriter = new QRCodeWriter();
         BitMatrix bitMatrix = qrCodeWriter.encode(urlToEncode, BarcodeFormat.QR_CODE, 300, 300);
 

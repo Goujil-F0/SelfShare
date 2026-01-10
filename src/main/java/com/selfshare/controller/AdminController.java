@@ -4,15 +4,13 @@ import com.selfshare.entity.AuditLog;
 import com.selfshare.repository.AuditLogRepository;
 import com.selfshare.repository.SecretRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/admin") // Toutes les routes ici commenceront par /api/admin
+@CrossOrigin(origins = "*")
 public class AdminController {
 
     @Autowired
