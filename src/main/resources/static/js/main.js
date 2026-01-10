@@ -52,7 +52,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const finalLink = `${window.location.origin}/view.html?id=${generatedId}#${encryptionKey}`;
 
             // --- ÉTAPE 6 : AFFICHAGE DU RÉSULTAT ---
-            showResultView(finalLink);
+            // On envoie le lien ET l'ID généré pour le QR Code
+            showResultView(finalLink, generatedId);
 
         } catch (error) {
             console.error("Erreur détaillée:", error);
@@ -90,9 +91,24 @@ function calculateExpiryDate(hours) {
 /**
  * Bascule l'affichage du formulaire vers le résultat
  */
-function showResultView(link) {
+/**
+ * Bascule l'affichage du formulaire vers le résultat et affiche le QR Code
+ */
+function showResultView(link, secretId) {
     document.getElementById('step-form').style.display = 'none';
-    const resultDiv = document.getElementById('step-result');
-    resultDiv.style.display = 'block';
+    document.getElementById('step-result').style.display = 'block';
     document.getElementById('shareUrl').value = link;
+
+    const qrImg = document.getElementById('qr-code-img');
+    const qrContainer = document.getElementById('qr-code-container');
+
+    if (qrImg && qrContainer) {
+        // récupère http://localhost:8081 OU https://stumpily...ngrok-free.dev
+        const currentOrigin = window.location.origin;
+
+        // On passe cet origin en paramètre "baseUrl"
+        qrImg.src = `/api/secrets/qr?link=${encodeURIComponent(link)}`;
+        qrContainer.style.display = 'block';
+    }
 }
+

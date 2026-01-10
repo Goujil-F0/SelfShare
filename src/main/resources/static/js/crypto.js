@@ -66,4 +66,5 @@ async function decryptData(encryptedBase64, ivBase64, keyBase64, isFile = false)
     } else {
         return new TextDecoder().decode(decryptedBuffer);
     }
+
 }

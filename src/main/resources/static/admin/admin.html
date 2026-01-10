@@ -69,6 +69,46 @@
         </main>
     </div>
 </div>
+<!-- DANGER ZONE -->
+<div style="margin-top: 30px; padding: 20px; border: 1px dashed #ff4d4d; border-radius: 8px; background: rgba(255, 77, 77, 0.05);">
+    <h3 style="color: #ff4d4d; margin-top: 0;">☢️ ZONE DE DANGER</h3>
+    <p style="color: #ccc; font-size: 0.9rem;">Effacer immédiatement tous les secrets et fichiers du serveur.</p>
+    <button id="killBtn" style="background: #ff4d4d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);">
+        PURGER TOUTES LES DONNÉES
+    </button>
+</div>
+
+<script>
+    // On attend que la page admin soit totalement chargée
+    document.addEventListener('DOMContentLoaded', () => {
+        const killBtn = document.getElementById('killBtn');
+
+        if (killBtn) {
+            killBtn.addEventListener('click', function() {
+                if (confirm("🚨 ATTENTION : Voulez-vous vraiment supprimer TOUS les secrets ? Cette action est irréversible.")) {
+
+                    fetch('/api/admin/purge-all', {
+                        method: 'DELETE'
+                    })
+                        .then(response => {
+                            if (response.ok) {
+                                return response.text();
+                            }
+                            throw new Error("Erreur serveur : " + response.status);
+                        })
+                        .then(message => {
+                            alert("☢️ SYSTÈME PURGÉ : " + message);
+                            location.reload(); // Recharge la page pour mettre les compteurs à zéro
+                        })
+                        .catch(err => {
+                            console.error(err);
+                            alert("Erreur lors de la purge : " + err.message);
+                        });
+                }
+            });
+        }
+    });
+</script>
 
 <script src="charts.js"></script>
 </body>

@@ -46,10 +46,9 @@
 </div>
 
 <script>
-    // 1. Extraire l'ID (URL param) et la CLEF (Ancre #)
     const urlParams = new URLSearchParams(window.location.search);
     const secretId = urlParams.get('id');
-    const secretKey = window.location.hash.substring(1); // Le code après le #
+    const secretKey = window.location.hash.substring(1); // La clé après le #
 
     async function revealSecret() {
         if (!secretId || !secretKey) {
@@ -61,38 +60,42 @@
         document.getElementById('step-status').classList.remove('hidden');
 
         try {
-            // 2. Appel à l'API de l'Étudiant A
             const response = await fetch(`/api/secrets/${secretId}`);
-
             if (response.status === 404) {
                 showError("Ce secret n'existe plus ou a déjà été lu.");
                 return;
             }
-
             const data = await response.json();
 
-            // 3. Ici, on appellera la fonction de déchiffrement de l'Étudiant C
-            // Pour l'instant, on simule l'affichage
-            decryptAndDisplay(data, secretKey);
+            // ON APPELLE LE VRAI DÉCHIFFREMENT ICI
+            await decryptAndDisplay(data, secretKey);
 
         } catch (error) {
             showError("Erreur lors de la connexion au serveur.");
         }
     }
 
-    function decryptAndDisplay(data, key) {
-        // NOTE : C'est ici que l'Étudiant C interviendra avec window.crypto.subtle
-        // Pour ton test de design, on affiche le blob chiffré
-        document.getElementById('step-status').classList.add('hidden');
-        document.getElementById('step-display').classList.remove('hidden');
+    // FONCTION CORRIGÉE POUR LE DÉCHIFFREMENT RÉEL
+    async function decryptAndDisplay(data, key) {
+        try {
+            // On utilise la fonction 'decryptData' qui est dans ton fichier crypto.js
+            // On lui passe : (le contenu chiffré, l'IV, la clé du #, et si c'est un fichier)
+            const decryptedMessage = await decryptData(data.contentBlob, data.iv, key, data.file);
 
-        // Simulation (en attendant le script de l'étudiant C) :
-        document.getElementById('secret-text').innerText = "Contenu chiffré reçu : " + data.content_blob;
-        console.log("Clé de déchiffrement prête : ", key);
+            document.getElementById('step-status').classList.add('hidden');
+            document.getElementById('step-display').classList.remove('hidden');
+
+            // On affiche enfin le message en CLAIR !
+            document.getElementById('secret-text').innerText = decryptedMessage;
+
+        } catch (e) {
+            console.error(e);
+            showError("Erreur de déchiffrement : La clé est incorrecte ou les données sont corrompues.");
+        }
     }
 
     function showError(msg) {
-        document.getElementById('step-status').innerHTML = `<div class="alert alert-danger">${msg}</div><a href="/">Retour</a>`;
+        document.getElementById('step-status').innerHTML = `<div class="alert alert-danger">${msg}</div><a href="/" class="btn btn-link">Retour</a>`;
     }
 
     function copyToClipboard() {
