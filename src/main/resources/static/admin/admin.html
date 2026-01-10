@@ -3,144 +3,268 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Console d'Administration - SelfShare</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>SelfShare | Terminal de Contrôle S.O.C</title>
+
+    <!-- Polices et Icônes -->
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
     <style>
-        body { background-color: #f4f7f6; font-family: 'Inter', sans-serif; }
-        .sidebar { background: #2c3e50; min-height: 100vh; color: white; position: sticky; top: 0; }
-        .nav-link { color: rgba(255,255,255,0.7); }
-        .nav-link:hover, .nav-link.active { color: white; background: rgba(255,255,255,0.1); border-radius: 5px; }
-        .card-stat { border: none; border-left: 5px solid #3498db; border-radius: 10px; }
-        .table-container { background: white; border-radius: 10px; padding: 20px; }
-        .badge-created { background-color: #3498db; }
-        .badge-deleted { background-color: #2ecc71; }
-        .badge-expired { background-color: #e67e22; }
+        :root {
+            --bg-void: #020206;
+            --glass-base: rgba(12, 14, 28, 0.7);
+            --glass-border: rgba(0, 243, 255, 0.12);
+            --neon-cyan: #00f3ff;
+            --neon-purple: #9d00ff;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0; padding: 0; background: var(--bg-void);
+            color: var(--text-main); font-family: 'Inter', sans-serif;
+            height: 100vh; overflow: hidden; display: flex;
+        }
+
+        /* --- BACKGROUND ANIMÉ (RÉSEAU NEURONAL) --- */
+        #network-canvas { position: fixed; top: 0; left: 0; z-index: 0; opacity: 0.3; }
+
+        /* --- SIDEBAR PROFESSIONNELLE --- */
+        .sidebar {
+            width: 70px; background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(20px); border-right: 1px solid var(--glass-border);
+            display: flex; flex-direction: column; align-items: center; padding: 30px 0; z-index: 20;
+        }
+
+        .nav-link {
+            width: 44px; height: 44px; margin-bottom: 25px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.3s; color: var(--text-main); opacity: 0.4;
+            border: 1px solid transparent; position: relative;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            opacity: 1; border-color: var(--neon-cyan); background: rgba(0, 243, 255, 0.05);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.1);
+            color: var(--neon-cyan);
+        }
+
+        .nav-link.active::before {
+            content: ''; position: absolute; left: -13px; width: 4px; height: 20px;
+            background: var(--neon-cyan); box-shadow: 0 0 10px var(--neon-cyan); border-radius: 0 4px 4px 0;
+        }
+
+        .nav-link i { width: 20px; height: 20px; stroke-width: 1.5px; }
+
+        /* --- MAIN DASHBOARD AREA --- */
+        .dashboard {
+            flex: 1; padding: 30px; z-index: 10; overflow-y: auto;
+            background: radial-gradient(circle at 50% 50%, rgba(157, 0, 255, 0.03), transparent);
+        }
+
+        .header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 30px; padding-bottom: 15px; border-bottom: 1px solid var(--glass-border);
+        }
+
+        .header h1 {
+            font-size: 1.4rem; font-weight: 800; margin: 0; text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .system-badge {
+            font-family: 'JetBrains Mono'; font-size: 0.65rem; color: var(--neon-cyan);
+            border: 1px solid var(--neon-cyan); padding: 4px 12px; border-radius: 2px;
+            background: rgba(0, 243, 255, 0.03);
+        }
+
+        /* --- GRID & GLASS PANELS --- */
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+
+        .glass-panel {
+            background: var(--glass-base); backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border); border-radius: 12px;
+            padding: 20px; position: relative; overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            transition: 0.3s;
+        }
+
+        .glass-panel:hover { border-color: rgba(0, 243, 255, 0.4); transform: translateY(-2px); }
+
+        /* Coins Tech */
+        .glass-panel::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 8px; height: 8px;
+            border-top: 2px solid var(--neon-cyan); border-left: 2px solid var(--neon-cyan);
+        }
+
+        .panel-label {
+            font-family: 'JetBrains Mono'; font-size: 0.6rem; color: var(--text-dim);
+            text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; display: block;
+        }
+
+        .panel-value { font-size: 2.2rem; font-weight: 800; margin: 0; }
+
+        /* CHARTS */
+        .span-2 { grid-column: span 2; height: 280px; }
+
+        /* AUDIT TABLE */
+        .audit-panel { grid-column: span 4; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; font-family: 'JetBrains Mono'; font-size: 0.75rem; }
+        th { text-align: left; padding: 12px; color: var(--neon-purple); opacity: 0.8; font-weight: 400; border-bottom: 1px solid var(--glass-border); }
+        td { padding: 12px; border-bottom: 1px solid rgba(255,255,255,0.02); color: var(--text-dim); }
+        tr:hover td { color: #fff; background: rgba(0, 243, 255, 0.02); }
+
+        /* DANGER ZONE */
+        .danger-panel {
+            grid-column: span 4; margin-top: 30px; padding: 20px; border-radius: 12px;
+            border: 1px solid rgba(255, 77, 77, 0.2); background: rgba(255, 77, 77, 0.02);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+
+        .btn-purge {
+            background: transparent; border: 1px solid #ff4d4d; color: #ff4d4d;
+            padding: 10px 30px; border-radius: 6px; font-family: 'JetBrains Mono';
+            font-weight: bold; cursor: pointer; transition: 0.3s; font-size: 0.7rem;
+        }
+        .btn-purge:hover { background: #ff4d4d; color: #fff; box-shadow: 0 0 20px rgba(255, 77, 77, 0.4); }
+
     </style>
 </head>
 <body>
 
-<div class="container-fluid">
-    <div class="row">
-        <!-- Barre latérale -->
-        <nav class="col-md-2 d-none d-md-block sidebar p-3 shadow">
-            <h3 class="text-center mb-4">SelfShare</h3>
-            <hr>
-            <ul class="nav flex-column gap-2">
-                <li class="nav-item"><a class="nav-link active" href="#">📊 Tableau de bord</a></li>
-                <li class="nav-item"><a class="nav-link" href="/">🏠 Retour au site</a></li>
-                <li class="nav-item mt-5"><a class="nav-link text-danger" href="/logout">🚪 Déconnexion</a></li>
-            </ul>
-        </nav>
+<canvas id="network-canvas"></canvas>
 
-        <!-- Contenu Principal -->
-        <main class="col-md-10 p-4">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-                <h2>Statistiques du Serveur</h2>
-                <span class="badge bg-secondary">Mode Audit (Zéro-Knowledge)</span>
-            </div>
-
-            <!-- Cartes de résumé -->
-            <div class="row mb-4 g-3">
-                <div class="col-md-4">
-                    <div class="card card-stat shadow-sm p-3">
-                        <small class="text-muted">Secrets Actifs</small>
-                        <h2 id="count-active">--</h2>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card card-stat shadow-sm p-3" style="border-left-color: #2ecc71;">
-                        <small class="text-muted">Total Créés (Historique)</small>
-                        <h2 id="count-total">--</h2>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card card-stat shadow-sm p-3" style="border-left-color: #e67e22;">
-                        <small class="text-muted">Fichiers partagés</small>
-                        <h2 id="count-files">--</h2>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Graphiques -->
-            <div class="row mb-4 g-3">
-                <div class="col-md-7">
-                    <div class="card shadow-sm p-3 border-0">
-                        <h5>Activité des 7 derniers jours</h5>
-                        <canvas id="activityChart"></canvas>
-                    </div>
-                </div>
-                <div class="col-md-5">
-                    <div class="card shadow-sm p-3 border-0">
-                        <h5>Répartition par type</h5>
-                        <canvas id="typePieChart"></canvas>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Journal d'Audit (TABLEAU AJOUTÉ) -->
-            <div class="table-container shadow-sm">
-                <h5 class="mb-3">Dernières activités (Journal d'Audit)</h5>
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle">
-                        <thead class="table-light">
-                        <tr>
-                            <th>Date / Heure</th>
-                            <th>Événement</th>
-                            <th>ID Secret (Anonymisé)</th>
-                        </tr>
-                        </thead>
-                        <tbody id="audit-table-body">
-                        <!-- Rempli par charts.js -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </main>
+<aside class="sidebar">
+    <div class="nav-link active" title="Dashboard Operations">
+        <i data-lucide="layout-grid"></i>
     </div>
-</div>
-<!-- DANGER ZONE -->
-<div style="margin-top: 30px; padding: 20px; border: 1px dashed #ff4d4d; border-radius: 8px; background: rgba(255, 77, 77, 0.05);">
-    <h3 style="color: #ff4d4d; margin-top: 0;">☢️ ZONE DE DANGER</h3>
-    <p style="color: #ccc; font-size: 0.9rem;">Effacer immédiatement tous les secrets et fichiers du serveur.</p>
-    <button id="killBtn" style="background: #ff4d4d; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; box-shadow: 0 0 10px rgba(255, 77, 77, 0.5);">
-        PURGER TOUTES LES DONNÉES
-    </button>
-</div>
+    <div class="nav-link" onclick="window.location.href='/vault.html'" title="Return to Vault">
+        <i data-lucide="shield-check"></i>
+    </div>
 
-<script>
-    // On attend que la page admin soit totalement chargée
-    document.addEventListener('DOMContentLoaded', () => {
-        const killBtn = document.getElementById('killBtn');
+    <div style="flex: 1;"></div>
+    <div class="nav-link" style="color: #ff4d4d;" title="Terminate Session" onclick="window.location.href='/logout'">
+        <i data-lucide="log-out"></i>
+    </div>
+</aside>
 
-        if (killBtn) {
-            killBtn.addEventListener('click', function() {
-                if (confirm("🚨 ATTENTION : Voulez-vous vraiment supprimer TOUS les secrets ? Cette action est irréversible.")) {
+<main class="dashboard">
+    <header class="header">
+        <div>
+            <h1>S.O.C_Terminal</h1>
+            <div style="font-size: 0.65rem; opacity: 0.5; font-family: 'JetBrains Mono';">NODE: 127.0.0.1 // STATUS: SECURE_UPLINK</div>
+        </div>
+        <div class="system-badge">SYSTEM_MONITOR_ACTIVE</div>
+    </header>
 
-                    fetch('/api/admin/purge-all', {
-                        method: 'DELETE'
-                    })
-                        .then(response => {
-                            if (response.ok) {
-                                return response.text();
-                            }
-                            throw new Error("Erreur serveur : " + response.status);
-                        })
-                        .then(message => {
-                            alert("☢️ SYSTÈME PURGÉ : " + message);
-                            location.reload(); // Recharge la page pour mettre les compteurs à zéro
-                        })
-                        .catch(err => {
-                            console.error(err);
-                            alert("Erreur lors de la purge : " + err.message);
-                        });
-                }
-            });
-        }
-    });
-</script>
+    <div class="grid">
+        <!-- Mini Stats -->
+        <div class="glass-panel">
+            <span class="panel-label">Secrets_Actifs</span>
+            <p class="panel-value" id="count-active">0</p>
+        </div>
+        <div class="glass-panel">
+            <span class="panel-label">Total_Generated</span>
+            <p class="panel-value" id="count-total" style="color: var(--neon-purple);">0</p>
+        </div>
+        <div class="glass-panel">
+            <span class="panel-label">Fichiers_Transférés</span>
+            <p class="panel-value" id="count-files">0</p>
+        </div>
+        <div class="glass-panel">
+            <span class="panel-label">Charge_Serveur</span>
+            <p class="panel-value" style="color: var(--neon-cyan);">0.4%</p>
+        </div>
 
-<!-- Chemin corrigé pour correspondre à la structure standard -->
+        <!-- Charts Area -->
+        <div class="glass-panel span-2">
+            <span class="panel-label">Fréquence_des_Transactions_7D</span>
+            <canvas id="activityChart"></canvas>
+        </div>
+        <div class="glass-panel span-2">
+            <span class="panel-label">Répartition_des_Données</span>
+            <canvas id="typePieChart"></canvas>
+        </div>
+
+        <!-- Audit Log -->
+        <div class="glass-panel audit-panel">
+            <span class="panel-label">Journal_Audit_Sécurisé (Live)</span>
+            <table>
+                <thead>
+                <tr>
+                    <th>Horodatage</th>
+                    <th>Action_Système</th>
+                    <th>ID_Objet (Haché)</th>
+                </tr>
+                </thead>
+                <tbody id="audit-table-body">
+                <!-- Rempli par charts.js -->
+                </tbody>
+            </table>
+        </div>
+
+        <div class="danger-panel">
+            <div>
+                <h3 style="margin: 0; color: #ff4d4d; font-size: 0.9rem;">PROTOCOLE_PURGE_0x0</h3>
+                <p style="margin: 5px 0 0 0; font-size: 0.7rem; color: var(--text-dim);">Effacement irréversible de l'intégralité du stockage disque.</p>
+            </div>
+            <button class="btn-purge" onclick="purgeSystem()">EXECUTE_PURGE</button>
+        </div>
+    </div>
+</main>
+
+<!-- Chargement des Scripts -->
 <script src="charts.js"></script>
+<script>
+    // Initialisation des icônes Lucide
+    lucide.createIcons();
+
+    // --- ANIMATION DU RÉSEAU (Background) ---
+    const canvas = document.getElementById('network-canvas');
+    const ctx = canvas.getContext('2d');
+    let points = [];
+
+    function init() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        points = [];
+        for(let i=0; i<80; i++) points.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.4,
+            vy: (Math.random() - 0.5) * 0.4
+        });
+    }
+
+    function animate() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.strokeStyle = "rgba(0, 243, 255, 0.1)";
+        ctx.lineWidth = 0.5;
+        points.forEach((p, i) => {
+            p.x += p.vx; p.y += p.vy;
+            if(p.x < 0 || p.x > canvas.width) p.vx *= -1;
+            if(p.y < 0 || p.y > canvas.height) p.vy *= -1;
+            for(let j=i+1; j<points.length; j++) {
+                let d = Math.hypot(p.x - points[j].x, p.y - points[j].y);
+                if(d < 150) {
+                    ctx.beginPath(); ctx.moveTo(p.x, p.y); ctx.lineTo(points[j].x, points[j].y); ctx.stroke();
+                }
+            }
+        });
+        requestAnimationFrame(animate);
+    }
+    window.addEventListener('resize', init);
+    init(); animate();
+
+    // Fonction de Purge
+    function purgeSystem() {
+        if(confirm("🚨 ALERTE CRITIQUE : Cette action effacera TOUT. Confirmer ?")) {
+            fetch('/api/admin/purge-all', { method: 'DELETE' }).then(() => location.reload());
+        }
+    }
+</script>
 </body>
 </html>
