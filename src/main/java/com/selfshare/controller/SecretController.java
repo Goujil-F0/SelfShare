@@ -33,8 +33,9 @@ public class SecretController {
     }
 
     // Endpoint pour RÉCUPÉRER un secret par son ID (GET)
-    @GetMapping("/{id}")
-    public ResponseEntity<Secret> getSecret(@PathVariable String id) {
+    // On change GET par POST et on ajoute /reveal pour être précis
+    @PostMapping("/{id}/reveal")
+    public ResponseEntity<Secret> revealSecret(@PathVariable String id) {
         return secretService.getAndDestroySecret(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
