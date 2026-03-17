@@ -11,73 +11,79 @@ async function loadStats() {
         const logs = await resLogs.json();
         updateDashboard(activeCount, logs);
     } catch (e) {
-        console.error("Communication Failure");
+        console.error("Communication Failure", e);
     }
 }
 
 function updateDashboard(activeCount, logs) {
+    // 1. Mise à jour des compteurs simples
     document.getElementById('count-active').innerText = activeCount;
-    document.getElementById('count-total').innerText = logs.filter(l => l.eventType === 'CREATED').length;
-    document.getElementById('count-files').innerText = logs.filter(l => l.eventType === 'CREATED' && l.id % 2 === 0).length;
 
+    const totalCreated = logs.filter(l => l.eventType === 'CREATED').length;
+    const totalDeleted = logs.filter(l => l.eventType === 'DELETED_BY_USER' || l.eventType === 'EXPIRED').length;
+
+    document.getElementById('count-total').innerText = totalCreated;
+    // On simule le nombre de fichiers (ou on utilise une logique si tu as l'info)
+    document.getElementById('count-files').innerText = logs.filter(l => l.eventType === 'CREATED' && l.id % 3 === 0).length;
+
+    // 2. Remplissage du tableau d'audit (Correction du bug substring)
     const tableBody = document.getElementById('audit-table-body');
-    tableBody.innerHTML = logs.reverse().slice(0, 6).map(log => `
+    tableBody.innerHTML = [...logs].reverse().slice(0, 6).map(log => `
         <tr>
             <td style="opacity: 0.5;">${new Date(log.eventDate).toLocaleTimeString()}</td>
             <td>
-                <span class="status-pill" style="color: ${log.eventType === 'CREATED' ? '#00f3ff' : '#4d61ff'}; border-color: currentColor;">
+                <span class="status-pill" style="color: ${log.eventType === 'CREATED' ? '#00f3ff' : '#ff4d4d'};">
                     ${log.eventType}
                 </span>
             </td>
-            <td><code>0x${log.id.substring(0,12)}...</code></td>
+            <td><code>${log.secretId ? log.secretId.substring(0,8) : 'N/A'}...</code></td>
         </tr>
     `).join('');
 
+    // --- CONFIGURATION DES GRAPHIQUES ---
     Chart.defaults.color = 'rgba(255, 255, 255, 0.4)';
     Chart.defaults.font.family = 'JetBrains Mono';
 
-    // Activity Chart (Pulse style)
+    // 3. Graphique d'activité (Dynamique)
+    // On compte les logs par tranche d'heure pour les 24 dernières heures
+    const activityData = new Array(7).fill(0);
+    logs.slice(-20).forEach(l => {
+        const hour = new Date(l.eventDate).getHours();
+        activityData[Math.floor(hour/4)]++; // On groupe par blocs de 4h
+    });
+
     const ctxLine = document.getElementById('activityChart').getContext('2d');
     new Chart(ctxLine, {
         type: 'line',
         data: {
             labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00', '23:59'],
             datasets: [{
-                data: [4, 2, 12, 18, 14, 25, 15],
+                label: 'Transactions',
+                data: activityData, // DONNÉES RÉELLES ICI
                 borderColor: '#00f3ff',
                 backgroundColor: 'rgba(0, 243, 255, 0.05)',
-                borderWidth: 2,
-                pointRadius: 3,
                 tension: 0.4,
                 fill: true
             }]
         },
-        options: {
-            maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
-            scales: {
-                y: { grid: { color: 'rgba(255, 255, 255, 0.05)' } },
-                x: { grid: { display: false } }
-            }
-        }
+        options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
     });
 
-    // Doughnut Chart (High-tech Gauge style)
+    // 4. Graphique de répartition (Créés vs Détruits)
     new Chart(document.getElementById('typePieChart'), {
         type: 'doughnut',
         data: {
-            labels: ['MSG_PLAIN', 'MSG_FILE'],
+            labels: ['ACTIFS', 'DÉTRUITS'],
             datasets: [{
-                data: [60, 40],
-                backgroundColor: ['#00f3ff', '#4d61ff'],
-                borderWidth: 0,
-                hoverOffset: 15
+                data: [activeCount, totalDeleted], // DONNÉES RÉELLES ICI
+                backgroundColor: ['#00f3ff', '#9d00ff'],
+                borderWidth: 0
             }]
         },
         options: {
             maintainAspectRatio: false,
-            cutout: '85%',
-            plugins: { legend: { position: 'bottom', labels: { boxWidth: 8, padding: 20 } } }
+            cutout: '80%',
+            plugins: { legend: { position: 'bottom' } }
         }
     });
 }

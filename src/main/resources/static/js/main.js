@@ -85,12 +85,14 @@ function calculateExpiryDate(seconds) {
     if (seconds == 0 || seconds == "0") return null;
 
     const date = new Date();
-    // vault.html envoie des secondes (3600, 86400), donc on utilise setSeconds
     date.setSeconds(date.getSeconds() + parseInt(seconds));
 
-    // Format requis par Java LocalDateTime : YYYY-MM-DDTHH:mm:ss
-    // On retire les millisecondes et le 'Z' (UTC) qui font planter le serveur
-    return date.toISOString().split('.')[0];
+    // On calcule le décalage horaire (offset) en minutes et on l'ajuste
+    const offset = date.getTimezoneOffset() * 60000;
+    const localISOTime = new Date(date.getTime() - offset).toISOString();
+
+    // On renvoie le format YYYY-MM-DDTHH:mm:ss attendu par Java
+    return localISOTime.split('.')[0];
 }
 
 /**

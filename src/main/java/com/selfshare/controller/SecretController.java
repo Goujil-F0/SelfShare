@@ -6,7 +6,6 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 import com.selfshare.entity.Secret;
 import com.selfshare.service.SecretService;
-import jakarta.servlet.http.HttpServletRequest;
 import java.io.ByteArrayOutputStream;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -33,8 +32,9 @@ public class SecretController {
     }
 
     // Endpoint pour RÉCUPÉRER un secret par son ID (GET)
-    @GetMapping("/{id}")
-    public ResponseEntity<Secret> getSecret(@PathVariable String id) {
+    // On change GET par POST et on ajoute /reveal pour être précis
+    @PostMapping("/{id}/reveal")
+    public ResponseEntity<Secret> revealSecret(@PathVariable String id) {
         return secretService.getAndDestroySecret(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

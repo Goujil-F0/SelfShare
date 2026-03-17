@@ -24,7 +24,7 @@ public class Secret {
     // Constructeurs
     public Secret() {}
 
-    // Getters et Setters (Tu peux les générer avec Alt+Insert)
+    // Getters et Setters
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
     public byte[] getContentBlob() { return contentBlob; }

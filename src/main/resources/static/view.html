@@ -122,6 +122,8 @@
     </div>
 </div>
 
+
+
 <script src="js/crypto.js"></script>
 <script>
     // --- STARFIELD BACKGROUND ---
@@ -171,19 +173,35 @@
     const secretId = urlParams.get('id');
     const secretKey = window.location.hash.substring(1);
 
+    let isProcessing = false;
+
     async function revealSecret() {
+        if (isProcessing) return;
+        isProcessing = true;
+
         if (!secretId || !secretKey) {
-            alert("Erreur : ID ou Clé manquante."); return;
+            alert("Erreur : ID ou Clé manquante.");
+            isProcessing = false;
+            return;
         }
+
         document.getElementById('step-reveal').classList.add('hidden');
         document.getElementById('step-status').classList.remove('hidden');
 
         try {
-            const response = await fetch(`/api/secrets/${secretId}`);
+            // CHANGEMENT ICI : On utilise POST et l'URL /reveal
+            const response = await fetch(`/api/secrets/${secretId}/reveal`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+
             if (!response.ok) throw new Error("Secret expiré ou déjà lu.");
+
             const data = await response.json();
 
-            // Appel à ton crypto.js
+            // ORDRE DES PARAMÈTRES : Blob, IV, Key, File
             const decryptedContent = await decryptData(data.contentBlob, secretKey, data.iv, data.file);
 
             document.getElementById('step-status').classList.add('hidden');
@@ -199,7 +217,10 @@
                 document.getElementById('secret-text').innerText = decryptedContent;
             }
         } catch (err) {
-            document.getElementById('step-status').innerHTML = `<p style="color: #ff4d4d;">[ ERROR: ${err.message} ]</p>`;
+            // En cas d'erreur, on réaffiche un message clair
+            document.getElementById('step-status').innerHTML = `<p style="color: #ff4d4d;">[ ERROR: ${err.message} ]</p><a href="/" style="color:white">Retour</a>`;
+        } finally {
+            isProcessing = false;
         }
     }
 
