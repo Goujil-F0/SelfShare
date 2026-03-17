@@ -25,7 +25,7 @@ public class AdminController {
         return secretRepository.count();
     }
 
-    // 2. Récupérer tout l'historique des logs (pour le tableau de l'étudiant D)
+    // 2. Récupérer tout l'historique des logs
     @GetMapping("/logs")
     public List<AuditLog> getAllLogs() {
         return auditLogRepository.findAll();
