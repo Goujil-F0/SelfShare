@@ -1,47 +1,108 @@
+<div align="center">
+
 # SelfShare
 
-SelfShare is a secure ephemeral vault for sharing sensitive text or files through one-time links. Data is encrypted in the browser before it reaches the server, and each secret can be destroyed after the first read or after its expiration time.
+### A secure ephemeral vault for sharing encrypted text and files through one-time links.
 
-## Highlights
+![Secure](https://img.shields.io/badge/SECURE-ZERO_KNOWLEDGE-00C2FF?style=for-the-badge)
+![Ephemeral](https://img.shields.io/badge/EPHEMERAL-BURN_AFTER_READ-8A2BE2?style=for-the-badge)
+![Backend](https://img.shields.io/badge/BACKEND-SPRING_BOOT-21A366?style=for-the-badge)
+![Database](https://img.shields.io/badge/DATABASE-MYSQL-4479A1?style=for-the-badge)
+![Frontend](https://img.shields.io/badge/FRONTEND-VANILLA_JS-F7DF1E?style=for-the-badge)
+![Tests](https://img.shields.io/badge/TESTS-H2_IN_MEMORY-FF6B6B?style=for-the-badge)
 
-- Client-side AES-GCM encryption with the Web Crypto API.
-- One-time reveal endpoint: a secret is deleted immediately after access.
-- Expiration cleanup task for unread secrets.
-- Optional file sharing up to 10 MB.
-- QR code generation for mobile access.
-- Admin dashboard with active secret count, audit logs, and emergency purge.
-- OpenAPI/Swagger UI available during development.
+**SelfShare** encrypts secrets directly in the browser, stores only encrypted payloads on the server, and destroys each secret after it is revealed or expired.
+
+</div>
+
+---
+
+## Overview
+
+SelfShare is a full-stack Spring Boot application designed for secure temporary sharing. Users can create an encrypted message or file, generate a private link, and send it to a recipient. The recipient can reveal the secret once; after that, the backend deletes it permanently.
+
+The encryption key is never stored by the backend. It is placed in the URL fragment after `#`, which browsers do not send to the server.
+
+---
+
+## Core Features
+
+| Feature | Description |
+| --- | --- |
+| Client-side encryption | AES-GCM encryption using the Web Crypto API before data leaves the browser. |
+| One-time access | Secret is deleted immediately after the reveal endpoint is called. |
+| Expiration cleanup | Scheduled cleanup removes unread expired secrets. |
+| File support | Encrypted file sharing with a 10 MB upload limit. |
+| QR code sharing | Generates a QR code for mobile access. |
+| Admin dashboard | Tracks active secrets, audit logs, and emergency purge actions. |
+| API documentation | Swagger UI available for development and testing. |
+
+---
 
 ## Tech Stack
 
-- Java 17
-- Spring Boot 3.4
-- Spring Web, Spring Security, Spring Data JPA
-- MySQL for local/prod persistence
-- H2 for automated tests
-- Vanilla HTML, CSS, and JavaScript
-- Web Crypto API for browser encryption
+<div align="center">
 
-## Security Model
+![Java](https://img.shields.io/badge/JAVA-17-ED8B00?style=flat-square)
+![Spring Boot](https://img.shields.io/badge/SPRING_BOOT-3.4.1-6DB33F?style=flat-square)
+![Spring Security](https://img.shields.io/badge/SPRING_SECURITY-AUTH-6DB33F?style=flat-square)
+![JPA](https://img.shields.io/badge/JPA-HIBERNATE-59666C?style=flat-square)
+![MySQL](https://img.shields.io/badge/MYSQL-PERSISTENCE-4479A1?style=flat-square)
+![H2](https://img.shields.io/badge/H2-TEST_DATABASE-0F9D58?style=flat-square)
+![JavaScript](https://img.shields.io/badge/JAVASCRIPT-WEB_CRYPTO-F7DF1E?style=flat-square)
+![HTML5](https://img.shields.io/badge/HTML5-STATIC_UI-E34F26?style=flat-square)
+![CSS3](https://img.shields.io/badge/CSS3-CYBER_UI-1572B6?style=flat-square)
 
-SelfShare follows a zero-knowledge style flow:
+</div>
 
-1. The browser generates a random AES-GCM key.
-2. The secret is encrypted locally.
-3. The backend stores only encrypted bytes and the IV.
-4. The encryption key is placed in the URL fragment after `#`.
-5. URL fragments are not sent to the server by browsers.
-6. When the recipient reveals the secret, the backend returns the encrypted payload and deletes it.
+---
 
-Important: the share link contains the decryption key. It must be sent through a trusted channel.
+## Security Flow
+
+```mermaid
+flowchart LR
+    A["User writes a secret"] --> B["Browser generates AES-GCM key"]
+    B --> C["Browser encrypts content"]
+    C --> D["Backend stores encrypted payload + IV"]
+    D --> E["Share link contains id + key fragment"]
+    E --> F["Recipient opens link"]
+    F --> G["Backend returns encrypted payload once"]
+    G --> H["Backend deletes the secret"]
+    H --> I["Browser decrypts locally"]
+```
+
+Important: the generated link contains the decryption key in the URL fragment. Share it only through a trusted channel.
+
+---
+
+## Project Structure
+
+```text
+src/main/java/com/selfshare
+  config/        Spring Security configuration
+  controller/    REST and admin controllers
+  entity/        JPA entities
+  repository/    Spring Data repositories
+  service/       Secret, cleanup, file, and mail services
+
+src/main/resources/static
+  index.html     Entry screen
+  vault.html     Secret creation UI
+  view.html      Secret reveal UI
+  admin/         Admin dashboard
+  js/            API and crypto logic
+  css/           Cyber-style interface
+```
+
+---
 
 ## Configuration
 
-The application reads sensitive values from environment variables. Defaults are safe for local development but should be changed before sharing or deployment.
+SelfShare uses environment variables for sensitive values. Do not commit real credentials.
 
-| Variable | Description | Default |
+| Variable | Purpose | Default |
 | --- | --- | --- |
-| `SELFSHARE_DB_URL` | JDBC URL for MySQL | `jdbc:mysql://localhost:3306/selfshare_db?...` |
+| `SELFSHARE_DB_URL` | MySQL JDBC URL | `jdbc:mysql://localhost:3306/selfshare_db?...` |
 | `SELFSHARE_DB_USERNAME` | Database username | `root` |
 | `SELFSHARE_DB_PASSWORD` | Database password | empty |
 | `SELFSHARE_MAIL_HOST` | SMTP host | `localhost` |
@@ -51,15 +112,11 @@ The application reads sensitive values from environment variables. Defaults are 
 | `SELFSHARE_ADMIN_USERNAME` | Admin username | `admin` |
 | `SELFSHARE_ADMIN_PASSWORD` | Admin password | `change-me` |
 
-An example Spring configuration is available in [application-example.properties](application-example.properties).
+Examples are available in [.env.example](.env.example) and [application-example.properties](application-example.properties).
+
+---
 
 ## Run Locally
-
-Prerequisites:
-
-- JDK 17 or newer
-- Maven 3.9 or the included Maven wrapper
-- MySQL running locally
 
 Create the database:
 
@@ -73,11 +130,15 @@ Start the application:
 mvn spring-boot:run
 ```
 
-Then open:
+Open the app:
 
-- App: `http://localhost:8081`
-- Admin: `http://localhost:8081/admin/admin.html`
-- Swagger UI: `http://localhost:8081/swagger-ui.html`
+| Page | URL |
+| --- | --- |
+| Vault | `http://localhost:8081` |
+| Admin | `http://localhost:8081/admin/admin.html` |
+| Swagger UI | `http://localhost:8081/swagger-ui.html` |
+
+---
 
 ## Test
 
@@ -85,7 +146,9 @@ Then open:
 mvn test
 ```
 
-Tests use an in-memory H2 database through `src/test/resources/application.properties`, so MySQL is not required for the test suite.
+The test suite uses an in-memory H2 database, so MySQL is not required for automated tests.
+
+---
 
 ## API Overview
 
@@ -98,28 +161,12 @@ Tests use an in-memory H2 database through `src/test/resources/application.prope
 | `GET` | `/api/admin/logs` | Read audit logs |
 | `DELETE` | `/api/admin/purge-all` | Delete all stored secrets |
 
-## Project Structure
+---
 
-```text
-src/main/java/com/selfshare
-  config/        Spring Security configuration
-  controller/    REST controllers
-  entity/        JPA entities
-  repository/    Spring Data repositories
-  service/       Secret, cleanup, file, and mail services
+## Production Notes
 
-src/main/resources/static
-  index.html     Entry screen
-  vault.html     Secret creation UI
-  view.html      Secret reveal UI
-  admin/         Admin dashboard
-  js/            Frontend API and crypto logic
-  css/           UI styles
-```
-
-## Notes
-
-- Do not commit real database, SMTP, or admin credentials.
 - Change the default admin password before any public demo.
-- For production, enable HTTPS and review CSRF/CORS settings.
-- The current UI is static and intentionally dependency-light.
+- Rotate any credentials that were ever committed in Git history.
+- Use HTTPS in production.
+- Review CORS and CSRF settings before deployment.
+- Keep SMTP, database, and admin credentials in environment variables.
